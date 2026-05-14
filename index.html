@@ -11,24 +11,16 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/style.css" />
-
-    <!-- Tailwind CDN allows you to use Tailwind classes immediately in your HTML without any installation steps. 
-      If you're not using Tailwind, you may delete the <script> -->
-    <!-- Get started on Tailwind: https://tailwindcss.com/docs/installation/play-cdn -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
     <link rel="icon" href="img/favicon.ico" sizes="any" />
-    <style>
-      /* You may write styles inside this <style> tag or within `css/style.css`. */
-    </style>
   </head>
   <body>
-    <!-- Add your site or application content here -->
-    <h1 class="text-5xl text-center font-semibold pt-20">
-      Hello world! Write your content here.
-    </h1>
+    <main>
+      <email-input aria-placeholder="name@email.com" aria-label="Email" hint="This is a hint text"></email-input>
+      <email-input aria-placeholder="name@email.com" aria-label="Email" hint="This is a hint text" has-mail-icon="true"></email-input>
+      <email-input aria-placeholder="name@email.com" aria-label="Email" hint="This is a hint text" aria-disabled="true"></email-input>
+      <email-input aria-placeholder="name@email.com" aria-label="Email" hint="This is an error message" error="true" value="invalid-email"></email-input>
+    </main>
 
-    <!-- Attribute this challenge to yourself! -->
     <div class="credits">
       A challenge by
       <a
@@ -36,10 +28,55 @@
         target="_blank"
         >GreatFrontEnd Projects</a
       >. Built by
-      <a href="https://www.greatfrontend.com/u/your_username" target="_blank"
-        >Julio Bermudez</a
-      >.
+      <a href="https://www.greatfrontend.com/u/your_username" target="_blank">Julio Bermudez</a>
     </div>
-    <script src="js/index.js"></script>
+    <script>
+      class EmailInput extends HTMLElement {
+        constructor() {
+          super();
+          this.attachShadow({ mode: "open" });
+        }
+        connectedCallback() {
+          const hasMailIcon = this.getAttribute("has-mail-icon") === "true";
+          const hasError = this.getAttribute("error") === "true";
+          const isDisabled = this.getAttribute("aria-disabled") === "true";
+          this.shadowRoot.innerHTML = `
+          <style>
+            .input-container { margin: 40px 0;}
+            .input-wrapper { position: relative; display: flex; align-items: center; }
+            .input-icon { position: absolute; left: 12px; width: 20px; height: 20px; color: #666; pointer-events: none; }
+            .question-icon { position: absolute; right: 12px; width: 20px; height: 20px; color: #666; pointer-events: none; }
+            input { font-family: 'Noto Sans', sans-serif; padding: 10px 12px 10px ${hasMailIcon ? '40px' : '12px'}; border: 1px solid #ccc; border-radius: 8px; width: 100%; box-sizing: border-box; }
+            input:disabled { background-color: #f9fafb; color: #667085; cursor: not-allowed; border-color: #eaecf0; }
+            input:focus { outline: none; box-shadow: 3px 3px 5px }
+            .hint { font-size: 0.8rem; color: ${hasError ? '#d92d20' : '#666'}; margin-top: 4px; }
+            label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 4px; color: #374151; }
+          </style>
+          <div class="input-container">
+            <label for="email">${this.getAttribute("aria-label") || ''}</label>
+            <div class="input-wrapper">
+              ${hasMailIcon ? `
+              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+              </svg>` : ''}
+              <input 
+                type="email"
+                id="email"
+                value="${this.getAttribute("value") || ''}"
+                placeholder="${this.getAttribute("aria-placeholder") || ''}"
+                aria-label="${this.getAttribute("aria-label") || ''}"
+                required="${this.getAttribute("required") || 'false'}"
+                ${isDisabled ? 'disabled' : ''}
+              />
+              <svg class="question-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill=${hasError ? '#d92d20' : '#666'}><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM11 15H13V17H11V15ZM13 13.3551V14H11V12.5C11 11.9477 11.4477 11.5 12 11.5C12.8284 11.5 13.5 10.8284 13.5 10C13.5 9.17157 12.8284 8.5 12 8.5C11.2723 8.5 10.6656 9.01823 10.5288 9.70577L8.56731 9.31346C8.88637 7.70919 10.302 6.5 12 6.5C13.933 6.5 15.5 8.067 15.5 10C15.5 11.5855 14.4457 12.9248 13 13.3551Z"></path></svg>
+            </div>
+            <div class="hint">${this.getAttribute("hint") || ''}</div>
+          </div>
+          `;
+        }
+      }
+
+      customElements.define("email-input", EmailInput);
+    </script>
   </body>
 </html>
